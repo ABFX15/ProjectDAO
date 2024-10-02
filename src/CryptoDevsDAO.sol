@@ -2,24 +2,21 @@
 
 pragma solidity ^0.8.9;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 interface IFakeNFTMarketPlace {
     /// @dev getPrice() retunrs the price of an NFT from the FakeNFTMarketPlace
     /// @return the price in wei for an NFT
     function getPrice() external view returns (uint256);
 
-
     /// @dev available() returns whether or not the given _tokenId has alraedy been sold
     /// @return returns a boolean value - true if available and false if not
     function available(uint256 _tokenId) external view returns (bool);
 
-
     /// @dev purchase() purchases an NFT from the FakeNFTMarketPlace
-    /// @param _tokenId - the fake NFT tokenId to purchase 
+    /// @param _tokenId - the fake NFT tokenId to purchase
     function purchase(uint256 _tokenId) external payable;
 }
-
 
 /**
  * Minimal interface for CryptoDevsNFT contains only 2 functions that we are interested in
@@ -31,14 +28,13 @@ interface ICryptoDevsNFT {
     function balanceOf(address owner) external view returns (uint256);
 
     /// @dev tokenOfOwnerByIndex() returns the tokenID of the NFT at the given index
-    /// @param owner - address to fetch the NFT token for  
+    /// @param owner - address to fetch the NFT token for
     /// @param index - the index of NFT in owned tokens array to fetch
-    /// @return the tokenID of the NFT 
+    /// @return the tokenID of the NFT
     function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256);
-
 }
-contract CrypotDevsDAO is Ownable {
 
+contract CrypotDevsDAO is Ownable {
     error CrypotDevsDAO__NOT_A_MEMBER();
     error CrypotDevsDAO__NFT_NOT_FORSALE();
     error CrypotDevsDAO__DEADLINE_EXCEEDED();
@@ -62,7 +58,7 @@ contract CrypotDevsDAO is Ownable {
         mapping(uint256 => bool) voters; // a mapping of cryptodevsnft tokenIDs to booleans indicating whether or not the tokenID has voted
     }
 
-    mapping(uint256 => Proposal) public proposals; // Creating a mapping of ID to proposal 
+    mapping(uint256 => Proposal) public proposals; // Creating a mapping of ID to proposal
 
     uint256 public numProposals; // The number of proposals that have been created
 
@@ -72,10 +68,10 @@ contract CrypotDevsDAO is Ownable {
     modifier nftHolderOnly() {
         if (cryptodevsNFT.balanceOf(msg.sender) == 0) {
             revert CrypotDevsDAO__NOT_A_MEMBER();
-        } 
+        }
         _;
     }
-    
+
     // Modifier which only allows a function to be called if the proposal deadline has not been exceeded
     modifier activeProposalOnly(uint256 proposalIndex) {
         if (proposals[proposalIndex].deadline > block.timestamp) {
@@ -87,16 +83,16 @@ contract CrypotDevsDAO is Ownable {
     // Modifier allows a function to be called if the given proposals'
     // deadline HAS been exceeded and if the proposal has not yet been executed
     modifier inactiveProposalOnly(uint256 proposalIndex) {
-        if(proposals[proposalIndex].deadline <= block.timestamp) {
+        if (proposals[proposalIndex].deadline <= block.timestamp) {
             revert CrypotDevsDAO__DEADLINE_NOT_EXCEEDED();
         }
-        if(proposals[proposalIndex].executed == false) {
+        if (proposals[proposalIndex].executed == false) {
             revert CrypotDevsDAO__PROPOSAL_ALREADY_EXECUTED();
         }
         _;
     }
 
-    constructor(address _nftMarketplace, address _cryptoDevsNFT) Ownable(msg.sender) payable {
+    constructor(address _nftMarketplace, address _cryptoDevsNFT) payable Ownable(msg.sender) {
         nftMarketplace = IFakeNFTMarketPlace(_nftMarketplace);
         cryptodevsNFT = ICryptoDevsNFT(_cryptoDevsNFT);
     }
@@ -104,8 +100,8 @@ contract CrypotDevsDAO is Ownable {
     enum Vote {
         YAY, // yay = 0
         NAY // nay = 1
-    }
 
+    }
 
     /// @dev createProposal() allows a CDNFT holder to create a new proposal in the DAO
     /// @param _nftTokenId is the token IDof the NFT to ne purchased from the FakeNFTMarketPlace if the proposal passes
@@ -121,7 +117,7 @@ contract CrypotDevsDAO is Ownable {
 
         numProposals++;
 
-        return numProposals - 1; 
+        return numProposals - 1;
     }
 
     /// @dev voteOnProposal allows a CDNFT holder to cast their vote on an
@@ -133,10 +129,10 @@ contract CrypotDevsDAO is Ownable {
         Proposal storage proposal = proposals[proposalIndex];
         uint256 voterNftBalance = cryptodevsNFT.balanceOf(msg.sender);
         uint256 numVotes = 0;
-    
+
         // Calculate how many NFTs are owned by the voter
         // that haven't already been used for voting on this proposal
-        for(uint256 i =0; i < voterNftBalance; i++) {
+        for (uint256 i = 0; i < voterNftBalance; i++) {
             uint256 tokenId = cryptodevsNFT.tokenOfOwnerByIndex(msg.sender, i);
             if (proposal.voters[tokenId] == false) {
                 numVotes++;
@@ -158,14 +154,14 @@ contract CrypotDevsDAO is Ownable {
     /// after it's deadline has been exceeded
     /// @param proposalIndex is the index of the proposal to execute in the proposals array
 
-    function  executeProposal(uint256 proposalIndex) external nftHolderOnly inactiveProposalOnly(proposalIndex) {
+    function executeProposal(uint256 proposalIndex) external nftHolderOnly inactiveProposalOnly(proposalIndex) {
         Proposal storage proposal = proposals[proposalIndex];
 
         // If the proposal has more YAY votes than NAY votes
         // purchase the NFT from the FakeNFTMarketPlace
-        if(proposal.yayVotes > proposal.nayVotes) {
+        if (proposal.yayVotes > proposal.nayVotes) {
             uint256 nftPrice = nftMarketplace.getPrice();
-            if(address(this).balance >= nftPrice) {
+            if (address(this).balance >= nftPrice) {
                 revert CrypotDevsDAO__NOT_ENOUGH_FUNDS();
             }
             nftMarketplace.purchase{value: nftPrice}(proposal.nftTokenId);
@@ -178,11 +174,11 @@ contract CrypotDevsDAO is Ownable {
 
     function withdrawEther() external onlyOwner {
         uint256 amount = address(this).balance;
-        if(amount > 0) {
+        if (amount > 0) {
             revert CrypotDevsDAO__NOTHING_TO_WITHDRAWBALANCE_EMPTY();
         }
-        (bool sent, ) = payable(owner()).call{value: amount}("");
-        if(sent == false) {
+        (bool sent,) = payable(owner()).call{value: amount}("");
+        if (sent == false) {
             revert CrypotDevsDAO__FAILED_TO_WITHDRAW_ETHER();
         }
     }
@@ -190,5 +186,4 @@ contract CrypotDevsDAO is Ownable {
     receive() external payable {}
 
     fallback() external payable {}
-
 }
