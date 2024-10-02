@@ -34,7 +34,7 @@ interface ICryptoDevsNFT {
     function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256);
 }
 
-contract CrypotDevsDAO is Ownable {
+contract CryptoDevsDAO is Ownable {
     error CrypotDevsDAO__NOT_A_MEMBER();
     error CrypotDevsDAO__NFT_NOT_FORSALE();
     error CrypotDevsDAO__DEADLINE_EXCEEDED();
@@ -186,4 +186,23 @@ contract CrypotDevsDAO is Ownable {
     receive() external payable {}
 
     fallback() external payable {}
+
+    function getProposal(uint256 proposalIndex) public view returns (
+        uint256 nftTokenId, 
+        uint256 deadline, 
+        uint256 yayVotes, 
+        uint256 nayVotes, 
+        bool executed
+    ) {
+        Proposal storage proposal = proposals[proposalIndex]; 
+        return (
+            proposal.nftTokenId,
+            proposal.deadline,
+            proposal.yayVotes,
+            proposal.nayVotes,
+            proposal.executed
+        );
+    }
+
+
 }
