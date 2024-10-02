@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.9;
 
-import { Test } from "forge-std/Test.sol";
-import { CryptoDevsDAO } from "../src/CryptoDevsDAO.sol";
-import { CryptoDevsNFT } from "../src/CryptoDevsNFT.sol";
-import { FakeNFTMarketplace } from "../src/FakeNFTMarketplace.sol";
+import {Test} from "forge-std/Test.sol";
+import {CryptoDevsDAO} from "../src/CryptoDevsDAO.sol";
+import {CryptoDevsNFT} from "../src/CryptoDevsNFT.sol";
+import {FakeNFTMarketplace} from "../src/FakeNFTMarketplace.sol";
 
 contract TestCryptoDevsDAO is Test {
     CryptoDevsDAO dao;
@@ -17,7 +17,7 @@ contract TestCryptoDevsDAO is Test {
     function setUp() public {
         nft = new CryptoDevsNFT();
         marketplace = new FakeNFTMarketplace();
-        dao = new CryptoDevsDAO(address(marketplace), address(nft)); 
+        dao = new CryptoDevsDAO(address(marketplace), address(nft));
 
         // set up users with some ETH
         user1 = makeAddr("user1");
@@ -40,7 +40,7 @@ contract TestCryptoDevsDAO is Test {
 
     function testVoteOnProposal() public {
         // check inital state
-        (,,uint256 yayVotes, uint256 nayVotes,) = dao.getProposal(0);
+        (,, uint256 yayVotes, uint256 nayVotes,) = dao.getProposal(0);
         assertEq(yayVotes, 0);
         assertEq(nayVotes, 0);
 
@@ -49,11 +49,11 @@ contract TestCryptoDevsDAO is Test {
         dao.voteOnProposal(0, CryptoDevsDAO.Vote.YAY);
 
         // Check it's been counted
-        (,,yayVotes, nayVotes,) = dao.getProposal(0);
+        (,, yayVotes, nayVotes,) = dao.getProposal(0);
         assertEq(yayVotes, 2);
         assertEq(nayVotes, 0);
         vm.stopPrank();
-    } 
+    }
 
     function testCannotVoteTwice() public {
         vm.startPrank(user1);
@@ -64,10 +64,10 @@ contract TestCryptoDevsDAO is Test {
         vm.stopPrank();
     }
 
-    function testVoteNayOnProposal() public {   
+    function testVoteNayOnProposal() public {
         vm.startPrank(user2);
         nft.mint();
-        vm.stopPrank(); 
+        vm.stopPrank();
 
         vm.startPrank(user2);
         dao.voteOnProposal(0, CryptoDevsDAO.Vote.NAY);

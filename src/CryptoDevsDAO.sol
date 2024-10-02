@@ -187,22 +187,12 @@ contract CryptoDevsDAO is Ownable {
 
     fallback() external payable {}
 
-    function getProposal(uint256 proposalIndex) public view returns (
-        uint256 nftTokenId, 
-        uint256 deadline, 
-        uint256 yayVotes, 
-        uint256 nayVotes, 
-        bool executed
-    ) {
-        Proposal storage proposal = proposals[proposalIndex]; 
-        return (
-            proposal.nftTokenId,
-            proposal.deadline,
-            proposal.yayVotes,
-            proposal.nayVotes,
-            proposal.executed
-        );
+    function getProposal(uint256 proposalIndex)
+        public
+        view
+        returns (uint256 nftTokenId, uint256 deadline, uint256 yayVotes, uint256 nayVotes, bool executed)
+    {
+        Proposal storage proposal = proposals[proposalIndex];
+        return (proposal.nftTokenId, proposal.deadline, proposal.yayVotes, proposal.nayVotes, proposal.executed);
     }
-
-
 }
