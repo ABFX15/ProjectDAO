@@ -174,11 +174,11 @@ contract CryptoDevsDAO is Ownable {
 
     function withdrawEther() external onlyOwner {
         uint256 amount = address(this).balance;
-        if (amount > 0) {
+        if (amount == 0) {
             revert CrypotDevsDAO__NOTHING_TO_WITHDRAWBALANCE_EMPTY();
         }
         (bool sent,) = payable(owner()).call{value: amount}("");
-        if (sent == false) {
+        if (!sent) {
             revert CrypotDevsDAO__FAILED_TO_WITHDRAW_ETHER();
         }
     }
